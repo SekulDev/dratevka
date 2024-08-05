@@ -4,9 +4,10 @@
 #include <synchapi.h>
 #include "src/include/config.h"
 #include "src/include/help.h"
+#include "prompt.h"
 
 void show_location(Location* location, Item* carryingItem) {
-    clear();
+//    clear();
     char can_go[100] = "You can go ";
     int can_go_added = 0;
     for (int i = 0; i < 4; i++) {
@@ -26,7 +27,7 @@ void show_location(Location* location, Item* carryingItem) {
     char see[150] = "You can see ";
     int see_added = 0;
     for (int i = 0; i < 6; i++) {
-        Item* item = locations->items[i];
+        Item* item = location->items[i];
         if (item == NULL) continue;
         if (see_added != 0) {
             strcat(see, ", ");
@@ -68,18 +69,16 @@ bool can_go(Location location, enum Directions direction) {
      return false;
 }
 
-void go(Location *location, enum Directions direction) {
-    if (!can_go(*location, direction)) {
-        cant_go();
+void go(Location **location, enum Directions direction) {
+    if (!can_go(**location, direction)) {
         return;
     }
-    int new_position = location->position + get_diff(direction);
+    int new_position = (**location).position + get_diff(direction);
     clear();
     printf("You are going %s...", locale_direction(direction));
     Sleep(1000);
     clear();
-    Location new_location = *get_location(new_position);
-    *location = new_location;
+    *location = &*get_location(new_position);
 }
 
 Item* get_item(const char* name) {
@@ -101,23 +100,86 @@ void init_start_items() {
     }
 }
 
+char get_command_action(char* command) {
+    printf("%s, %s, %d, %d\n", command, "EAST", strcmp(command, "EAST"), strcmp(command, "E"));
+    if (strcmp(command, "WEST") == 0 || strcmp(command, "W") == 0) return 'W';
+    if (strcmp(command, "EAST") == 0 || strcmp(command, "E") == 0) return 'E';
+    if (strcmp(command, "SOUTH") == 0 || strcmp(command, "S") == 0) return 'S';
+    if (strcmp(command, "NORTH") == 0 || strcmp(command, "N") == 0) return 'N';
+    if (strcmp(command, "VOCABULARY") == 0 || strcmp(command, "V") == 0) return 'V';
+    if (strcmp(command, "GOSSIPS") == 0 || strcmp(command, "G") == 0) return 'G';
+    if (strcmp(command, "TAKE") == 0 || strcmp(command, "T") == 0) return 'T';
+    if (strcmp(command, "DROP") == 0 || strcmp(command, "D") == 0) return 'D';
+    if (strcmp(command, "USE") == 0 || strcmp(command, "U") == 0) return 'U';
+    return 0;
+}
+
 int main(void) {
     init_start_items();
 
-    Location* location = get_location(START_POSITION);
+    Location *location = get_location(START_POSITION);
     Item* carrying_item = NULL;
+    char command[MAX_INPUT_SIZE];
+    char arg[MAX_INPUT_SIZE];
+    int milestones = 0;
 
-    show_location(location, carrying_item);
-    Sleep(3000);
+    while (1) {
+        if (milestones == 6) {
+            //@TODO GIVE SHEEP AND BREAK ON USE PRIZE
+            break;
+        }
+        strcpy((char *) &command, "");
+        strcpy((char *) &arg, "");
+        show_location(location, carrying_item);
 
-    go(location, EAST);
-    show_location(location, carrying_item);
-    Sleep(3000);
+        listen_for_command((char *) &command, (char *) &arg);
 
-    carrying_item = &items[0];
-
-    go(location, EAST);
-    show_location(location, carrying_item);
+        char action = get_command_action(command);
+        if (action == 'W') {
+            if (!can_go(*location, WEST)) {
+                cant_go();
+                continue;
+            }
+            go(&location, WEST);
+        } else if (action == 'E') {
+            if (!can_go(*location, EAST)) {
+                cant_go();
+                continue;
+            }
+            go(&location, EAST);
+        } else if (action == 'S') {
+            if (!can_go(*location, SOUTH)) {
+                cant_go();
+                continue;
+            }
+            go(&location, SOUTH);
+        } else if (action == 'N') {
+            if (!can_go(*location, NORTH)) {
+                cant_go();
+                continue;
+            }
+            go(&location, NORTH);
+        } else if (action == 'G') {
+            gossip();
+            continue;
+        } else if (action == 'V') {
+            vocabulary();
+            continue;
+        } else if (action == 'D') {
+            // DROP
+            continue;
+        } else if (action == 'T') {
+            // TAKE
+            continue;
+        } else if (action == 'U') {
+            // USE
+            continue;
+        } else {
+            printf("Try another word or V for vocabulary\n");
+            Sleep(2000);
+            continue;
+        }
+    }
 
     return 0;
 }

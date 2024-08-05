@@ -9,4 +9,6 @@ add_executable(dratevka main.c
         src/help.c
         src/include/config.h
         src/include/help.h
+        src/include/prompt.h
+        src/prompt.c
 )
