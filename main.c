@@ -2,8 +2,8 @@
 #include <stdbool.h>
 #include <string.h>
 #include <synchapi.h>
-#include "config/config.h"
-#include "help/help.h"
+#include "src/include/config.h"
+#include "src/include/help.h"
 
 void show_location(Location location) {
     clear();
