@@ -19,17 +19,6 @@ char* locale_direction(enum Directions direction);
 int get_diff(enum Directions);
 
 typedef struct {
-    char description[100];
-    int position;
-    enum Directions directions[4];
-    char startItem[ITEM_NAME_SIZE];
-} Location;
-
-extern Location locations[];
-
-extern const int LOCATIONS_LENGTH;
-
-typedef struct {
     int location;
     char newItem[ITEM_NAME_SIZE];
     char message[500];
@@ -43,8 +32,20 @@ typedef struct {
     UseAction useAction;
 } Item;
 
-extern const Item items[];
+extern Item items[];
 
 extern const int ITEMS_LENGTH;
+
+typedef struct {
+    char description[100];
+    int position;
+    enum Directions directions[4];
+    char startItem[ITEM_NAME_SIZE];
+    Item* items[6];
+} Location;
+
+extern Location locations[];
+
+extern const int LOCATIONS_LENGTH;
 
 #endif //DRATEVKA_CONFIG_H
