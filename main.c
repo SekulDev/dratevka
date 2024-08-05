@@ -5,7 +5,7 @@
 #include "src/include/config.h"
 #include "src/include/help.h"
 
-void show_location(Location location) {
+void show_location(Location location, Item* carryingItem) {
     clear();
     char can_go[100] = "You can go ";
     int can_go_added = 0;
@@ -25,9 +25,18 @@ void show_location(Location location) {
 
     char see[100] = "You can see ";
 
+    char carrying[50] = "You carrying ";
+
+    if (carryingItem == NULL) {
+        strcat(carrying, "NOTHING");
+    } else {
+        strcat(carrying, carryingItem->label);
+    }
+
     printf("%s %d\n"
            "%s\n"
-           "%s\n", location.description, location.position, can_go, see);
+           "%s\n"
+           "%s\n", location.description, location.position, can_go, see, carrying);
 }
 
 Location get_location(int position) {
@@ -63,15 +72,19 @@ void go(Location *location, enum Directions direction) {
 
 int main(void) {
     Location location = get_location(START_POSITION);
-    show_location(location);
+    Item* carrying_item = NULL;
+
+    show_location(location, carrying_item);
     Sleep(3000);
 
     go(&location, EAST);
-    show_location(location);
+    show_location(location, carrying_item);
     Sleep(3000);
 
+    carrying_item = &items[0];
+
     go(&location, EAST);
-    show_location(location);
+    show_location(location, carrying_item);
 
     return 0;
 }
