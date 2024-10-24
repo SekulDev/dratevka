@@ -2,9 +2,19 @@
 #include <stdbool.h>
 #include <string.h>
 #include <synchapi.h>
+#include <windows.h>
 #include "src/include/config.h"
 #include "src/include/help.h"
 #include "prompt.h"
+
+void display_message(const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    clear();
+    vprintf(format, args);
+    Sleep(1000);
+    va_end(args);
+}
 
 void show_location(Location* location, Item* carryingItem) {
 //    clear();
@@ -75,9 +85,7 @@ void go(Location **location, enum Directions direction) {
         return;
     }
     int new_position = (**location).position + get_diff(direction);
-    clear();
-    printf("You are going %s...\n", locale_direction(direction));
-    Sleep(1000);
+    display_message("You are going %s...\n", locale_direction(direction));
     clear();
     *location = &*get_location(new_position);
 }
@@ -137,16 +145,12 @@ void handle_movement(Location **location, char action) {
 
 void handle_drop(Location *location, Item **carrying_item, const char *arg) {
     if (!is_carrying_item(*carrying_item)) {
-        clear();
-        printf("You are not carrying anything\n");
-        Sleep(1000);
+        display_message("You are not carrying anything\n");
         return;
     }
 
     if (strcmp(arg, (*carrying_item)->name) != 0) {
-        clear();
-        printf("You haven't got an item like that\n");
-        Sleep(1000);
+        display_message("You haven't got an item like that\n");
         return;
     }
 
@@ -157,25 +161,19 @@ void handle_drop(Location *location, Item **carrying_item, const char *arg) {
             *carrying_item = NULL;
             space_found = true;
 
-            clear();
-            printf("You are dropping %s\n", location->items[i]->label);
-            Sleep(1000);
+            display_message("You are dropping %s\n", location->items[i]->label);
             break;
         }
     }
 
     if (!space_found) {
-        clear();
-        printf("There is not enough space in this location\n");
-        Sleep(1000);
+        display_message("There is not enough space in this location\n");
     }
 }
 
 void handle_take(Location *location, Item **carrying_item, const char *arg) {
     if (is_carrying_item(*carrying_item)) {
-        clear();
-        printf("You are already carrying something\n");
-        Sleep(1000);
+        display_message("You are already carrying something\n");
         return;
     }
 
@@ -185,9 +183,7 @@ void handle_take(Location *location, Item **carrying_item, const char *arg) {
         if (*item == NULL || strcmp((*item)->name, arg) != 0) continue;
 
         if ((*item)->flag == 0) {
-            clear();
-            printf("You can't carry that\n");
-            Sleep(1000);
+            display_message("You can't carry that\n");
             return;
         }
 
@@ -195,16 +191,12 @@ void handle_take(Location *location, Item **carrying_item, const char *arg) {
         *item = NULL;
         item_found = true;
 
-        clear();
-        printf("You are taking %s\n", (*carrying_item)->label);
-        Sleep(1000);
+        display_message("You are taking %s\n", (*carrying_item)->label);
         break;
     }
 
     if (!item_found) {
-        clear();
-        printf("There isn't anything like that here\n");
-        Sleep(1000);
+        display_message("There isn't anything like that here\n");
     }
 }
 
@@ -213,22 +205,16 @@ void handle_take(Location *location, Item **carrying_item, const char *arg) {
 void handle_use(Location *location, Item **carrying_item, const char *arg, int *milestones) {
     Item *item = *carrying_item;
     if (strcmp(arg, item->name) != 0) {
-        clear();
-        printf("You dont have item like that\n");
-        Sleep(1000);
+        display_message("You dont have item like that\n");
         return;
     }
 
     if (item->useAction.location != location->position) {
-        clear();
-        printf("Nothing happened\n");
-        Sleep(1000);
+        display_message("Nothing happened\n");
         return;
     }
 
-    clear();
-    printf("You are using %s\n", item->label);
-    Sleep(1000);
+    display_message("You are using %s\n", item->label);
 
     UseAction action = item->useAction;
     if (action.milestone == true) {
@@ -249,9 +235,7 @@ void handle_use(Location *location, Item **carrying_item, const char *arg, int *
         }
     }
 
-    clear();
-    printf("%s\n", action.message);
-    Sleep(1000);
+    display_message("%s\n", action.message);
 }
 
 int main(void) {
@@ -299,8 +283,8 @@ int main(void) {
                 handle_use(location, &carrying_item, arg, &milestones);
                 break;
             default:
-                printf("Try another word or V for vocabulary\n");
-                Sleep(2000);
+                display_message("Try another word or V for vocabulary\n");
+                Sleep(1000);
         }
     }
 
