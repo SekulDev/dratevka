@@ -208,6 +208,52 @@ void handle_take(Location *location, Item **carrying_item, const char *arg) {
     }
 }
 
+
+
+void handle_use(Location *location, Item **carrying_item, const char *arg, int *milestones) {
+    Item *item = *carrying_item;
+    if (strcmp(arg, item->name) != 0) {
+        clear();
+        printf("You dont have item like that\n");
+        Sleep(1000);
+        return;
+    }
+
+    if (item->useAction.location != location->position) {
+        clear();
+        printf("Nothing happened\n");
+        Sleep(1000);
+        return;
+    }
+
+    clear();
+    printf("You are using %s\n", item->label);
+    Sleep(1000);
+
+    UseAction action = item->useAction;
+    if (action.milestone == true) {
+        (*milestones)++;
+    }
+
+    Item *new_item = get_item(action.newItem);
+    if (new_item->flag == 1) {
+        *carrying_item = new_item;
+    } else {
+        for (int i = 0; i < MAX_ITEMS_PER_LOCATION; i++) {
+            if (location->items[i] == NULL) {
+                location->items[i] = &*new_item;
+                *carrying_item = NULL;
+
+                break;
+            }
+        }
+    }
+
+    clear();
+    printf("%s\n", action.message);
+    Sleep(1000);
+}
+
 int main(void) {
     init_start_items();
 
@@ -250,7 +296,7 @@ int main(void) {
                 handle_take(location, &carrying_item, arg);
                 break;
             case 'U':
-                // TODO: Implement USE action
+                handle_use(location, &carrying_item, arg, &milestones);
                 break;
             default:
                 printf("Try another word or V for vocabulary\n");

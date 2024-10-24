@@ -29,14 +29,14 @@ int get_diff(enum Directions direction) {
 Item items[] = {
         {"KEY", "a KEY", 1, {56, "AXE", "You opened a tool shed and took an axe", false}},
         {"STONE", "a STONE", 1},
-        {"sheeplegs", "sheeplges", 0},
+        {"sheeplegs", "sheeplegs", 0},
 };
 
 const int ITEMS_LENGTH = sizeof(items) / sizeof(Item);
 
 Location locations[] = {
         {"You are inside a brimstone mine", 11, {EAST}},
-        {"You are at the entrance to the mine", 12, {EAST, WEST}},
+        {"You are at the entrance to the mine", 12, {EAST, WEST}, "KEY"},
         {"A hill", 13, {EAST, WEST, SOUTH}, "STONE"},
 };
 
