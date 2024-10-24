@@ -2,6 +2,7 @@
 #define DRATEVKA_CONFIG_H
 
 #define ITEM_NAME_SIZE 30
+#define MAX_ITEMS_PER_LOCATION 6
 //#define START_POSITION 47
 #define START_POSITION 11 // temporary only
 
@@ -41,7 +42,7 @@ typedef struct {
     int position;
     enum Directions directions[4];
     char startItem[ITEM_NAME_SIZE];
-    Item* items[6];
+    Item* items[MAX_ITEMS_PER_LOCATION];
 } Location;
 
 extern Location locations[];

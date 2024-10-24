@@ -12,7 +12,7 @@ void listen_for_command(char *commandPtr, char *argPtr) {
         int command_length = 0;
         for (int i=0; input[i] != '\0' && input[i] != '\n'; i++) {
             if (input[i] == ' ') {
-                command_length = i;
+                command_length = i + 1;
                 was_space = true;
                 continue;
             };
@@ -24,7 +24,6 @@ void listen_for_command(char *commandPtr, char *argPtr) {
                 command[i + 1] = '\0';
             }
         }
-
         strcpy(commandPtr, command);
         strcpy(argPtr, arg);
     }

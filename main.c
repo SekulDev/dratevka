@@ -26,7 +26,7 @@ void show_location(Location* location, Item* carryingItem) {
 
     char see[150] = "You can see ";
     int see_added = 0;
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < MAX_ITEMS_PER_LOCATION; i++) {
         Item* item = location->items[i];
         if (item == NULL) continue;
         if (see_added != 0) {
@@ -95,13 +95,12 @@ void init_start_items() {
         if (locations[i].startItem[0] != '\0') {
             Item* item = get_item(locations[i].startItem);
             if (item == NULL) continue;
-            locations[i].items[0] = item;
+            locations[i].items[0] = &*item;
         }
     }
 }
 
 char get_command_action(char* command) {
-    printf("%s, %s, %d, %d\n", command, "EAST", strcmp(command, "EAST"), strcmp(command, "E"));
     if (strcmp(command, "WEST") == 0 || strcmp(command, "W") == 0) return 'W';
     if (strcmp(command, "EAST") == 0 || strcmp(command, "E") == 0) return 'E';
     if (strcmp(command, "SOUTH") == 0 || strcmp(command, "S") == 0) return 'S';
@@ -119,11 +118,11 @@ int main(void) {
 
     Location *location = get_location(START_POSITION);
     Item* carrying_item = NULL;
-    char command[MAX_INPUT_SIZE];
-    char arg[MAX_INPUT_SIZE];
     int milestones = 0;
 
     while (1) {
+        char command[MAX_INPUT_SIZE];
+        char arg[MAX_INPUT_SIZE];
         if (milestones == 6) {
             //@TODO GIVE SHEEP AND BREAK ON USE PRIZE
             break;
@@ -166,10 +165,75 @@ int main(void) {
             vocabulary();
             continue;
         } else if (action == 'D') {
-            // DROP
+            if (carrying_item == NULL) {
+                clear();
+                printf("You are not carrying anything\n");
+                Sleep(1000);
+                continue;
+            }
+            if (strcmp(arg, carrying_item->name) == 0) {
+                bool found = false;
+                for (int i=0; i<MAX_ITEMS_PER_LOCATION; i++) {
+                    Item** item = &(location->items[i]);
+                    if (*item == NULL) {
+                        found = true;
+                        *item = &*carrying_item;
+                        carrying_item = NULL;
+
+                        clear();
+                        printf("You are dropping %s\n", (*item)->label);
+                        Sleep(1000);
+
+                        break;
+                    }
+                }
+
+                if (!found) {
+                    clear();
+                    printf("There is no enough space on this location\n");
+                    Sleep(1000);
+                    continue;
+                }
+            } else {
+                clear();
+                printf("You haven't got item like that\n");
+                Sleep(1000);
+                continue;
+            }
+
             continue;
         } else if (action == 'T') {
-            // TAKE
+            if (carrying_item != NULL) {
+                clear();
+                printf("You are carrying something\n");
+                Sleep(1000);
+                continue;
+            }
+            bool found = false;
+            for (int i=0; i<MAX_ITEMS_PER_LOCATION; i++) {
+                Item** item = &(location->items[i]);
+                if (item == NULL) continue;
+                if (strcmp((*item)->name, arg) == 0) {
+                   if ((*item)->flag == 0) {
+                       clear();
+                       printf("You can't carry it\n");
+                       Sleep(1000);
+                       break;
+                   }
+                    carrying_item = get_item(arg);
+                    (*item) = NULL;
+                    found = true;
+                    clear();
+                    printf("You are taking %s\n", carrying_item->label);
+                    Sleep(1000);
+                    break;
+                }
+            }
+            if (!found) {
+                clear();
+                printf("There isn't anything like that here\n");
+                Sleep(1000);
+            }
             continue;
         } else if (action == 'U') {
             // USE
