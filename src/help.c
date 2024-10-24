@@ -1,10 +1,18 @@
 #include "include/help.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include <windows.h>
+#ifdef _WIN32
+    #include <windows.h>
+#else
+    #include <stdlib.h>
+#endif
 
 void clear() {
-    system("cls");
+    #ifdef _WIN32
+        system("cls");
+    #else
+        system("clear");
+    #endif
 }
 
 void gossip() {

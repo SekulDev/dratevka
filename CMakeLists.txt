@@ -12,3 +12,7 @@ add_executable(dratevka main.c
         src/include/prompt.h
         src/prompt.c
 )
+
+if(WIN32)
+    target_compile_definitions(dratevka PRIVATE _WIN32)
+endif()

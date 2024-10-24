@@ -58,6 +58,7 @@ Location* get_location(int position) {
             return &locations[i];
         }
     }
+    return NULL;
 }
 
 bool can_go(Location location, enum Directions direction) {
@@ -75,7 +76,7 @@ void go(Location **location, enum Directions direction) {
     }
     int new_position = (**location).position + get_diff(direction);
     clear();
-    printf("You are going %s...", locale_direction(direction));
+    printf("You are going %s...\n", locale_direction(direction));
     Sleep(1000);
     clear();
     *location = &*get_location(new_position);
@@ -113,6 +114,100 @@ char get_command_action(char* command) {
     return 0;
 }
 
+bool is_carrying_item(Item *carrying_item) {
+    return carrying_item != NULL;
+}
+
+void handle_movement(Location **location, char action) {
+    int direction;
+    switch (action) {
+        case 'W': direction = WEST; break;
+        case 'E': direction = EAST; break;
+        case 'S': direction = SOUTH; break;
+        case 'N': direction = NORTH; break;
+        default: return;
+    }
+
+    if (!can_go(**location, direction)) {
+        cant_go();
+    } else {
+        go(location, direction);
+    }
+}
+
+void handle_drop(Location *location, Item **carrying_item, const char *arg) {
+    if (!is_carrying_item(*carrying_item)) {
+        clear();
+        printf("You are not carrying anything\n");
+        Sleep(1000);
+        return;
+    }
+
+    if (strcmp(arg, (*carrying_item)->name) != 0) {
+        clear();
+        printf("You haven't got an item like that\n");
+        Sleep(1000);
+        return;
+    }
+
+    bool space_found = false;
+    for (int i = 0; i < MAX_ITEMS_PER_LOCATION; i++) {
+        if (location->items[i] == NULL) {
+            location->items[i] = *carrying_item;
+            *carrying_item = NULL;
+            space_found = true;
+
+            clear();
+            printf("You are dropping %s\n", location->items[i]->label);
+            Sleep(1000);
+            break;
+        }
+    }
+
+    if (!space_found) {
+        clear();
+        printf("There is not enough space in this location\n");
+        Sleep(1000);
+    }
+}
+
+void handle_take(Location *location, Item **carrying_item, const char *arg) {
+    if (is_carrying_item(*carrying_item)) {
+        clear();
+        printf("You are already carrying something\n");
+        Sleep(1000);
+        return;
+    }
+
+    bool item_found = false;
+    for (int i = 0; i < MAX_ITEMS_PER_LOCATION; i++) {
+        Item **item = &location->items[i];
+        if (*item == NULL || strcmp((*item)->name, arg) != 0) continue;
+
+        if ((*item)->flag == 0) {
+            clear();
+            printf("You can't carry that\n");
+            Sleep(1000);
+            return;
+        }
+
+        *carrying_item = get_item(arg);
+        *item = NULL;
+        item_found = true;
+
+        clear();
+        printf("You are taking %s\n", (*carrying_item)->label);
+        Sleep(1000);
+        break;
+    }
+
+    if (!item_found) {
+        clear();
+        printf("There isn't anything like that here\n");
+        Sleep(1000);
+    }
+}
+
 int main(void) {
     init_start_items();
 
@@ -129,119 +224,37 @@ int main(void) {
         }
         strcpy((char *) &command, "");
         strcpy((char *) &arg, "");
-        show_location(location, carrying_item);
 
+        show_location(location, carrying_item);
         listen_for_command((char *) &command, (char *) &arg);
 
         char action = get_command_action(command);
-        if (action == 'W') {
-            if (!can_go(*location, WEST)) {
-                cant_go();
-                continue;
-            }
-            go(&location, WEST);
-        } else if (action == 'E') {
-            if (!can_go(*location, EAST)) {
-                cant_go();
-                continue;
-            }
-            go(&location, EAST);
-        } else if (action == 'S') {
-            if (!can_go(*location, SOUTH)) {
-                cant_go();
-                continue;
-            }
-            go(&location, SOUTH);
-        } else if (action == 'N') {
-            if (!can_go(*location, NORTH)) {
-                cant_go();
-                continue;
-            }
-            go(&location, NORTH);
-        } else if (action == 'G') {
-            gossip();
-            continue;
-        } else if (action == 'V') {
-            vocabulary();
-            continue;
-        } else if (action == 'D') {
-            if (carrying_item == NULL) {
-                clear();
-                printf("You are not carrying anything\n");
-                Sleep(1000);
-                continue;
-            }
-            if (strcmp(arg, carrying_item->name) == 0) {
-                bool found = false;
-                for (int i=0; i<MAX_ITEMS_PER_LOCATION; i++) {
-                    Item** item = &(location->items[i]);
-                    if (*item == NULL) {
-                        found = true;
-                        *item = &*carrying_item;
-                        carrying_item = NULL;
 
-                        clear();
-                        printf("You are dropping %s\n", (*item)->label);
-                        Sleep(1000);
-
-                        break;
-                    }
-                }
-
-                if (!found) {
-                    clear();
-                    printf("There is no enough space on this location\n");
-                    Sleep(1000);
-                    continue;
-                }
-            } else {
-                clear();
-                printf("You haven't got item like that\n");
-                Sleep(1000);
-                continue;
-            }
-
-            continue;
-        } else if (action == 'T') {
-            if (carrying_item != NULL) {
-                clear();
-                printf("You are carrying something\n");
-                Sleep(1000);
-                continue;
-            }
-            bool found = false;
-            for (int i=0; i<MAX_ITEMS_PER_LOCATION; i++) {
-                Item** item = &(location->items[i]);
-                if (item == NULL) continue;
-                if (strcmp((*item)->name, arg) == 0) {
-                   if ((*item)->flag == 0) {
-                       clear();
-                       printf("You can't carry it\n");
-                       Sleep(1000);
-                       break;
-                   }
-                    carrying_item = get_item(arg);
-                    (*item) = NULL;
-                    found = true;
-                    clear();
-                    printf("You are taking %s\n", carrying_item->label);
-                    Sleep(1000);
-                    break;
-                }
-            }
-            if (!found) {
-                clear();
-                printf("There isn't anything like that here\n");
-                Sleep(1000);
-            }
-            continue;
-        } else if (action == 'U') {
-            // USE
-            continue;
-        } else {
-            printf("Try another word or V for vocabulary\n");
-            Sleep(2000);
-            continue;
+        switch (action) {
+            case 'W':
+            case 'E':
+            case 'S':
+            case 'N':
+                handle_movement(&location, action);
+                break;
+            case 'G':
+                gossip();
+                break;
+            case 'V':
+                vocabulary();
+                break;
+            case 'D':
+                handle_drop(location, &carrying_item, arg);
+                break;
+            case 'T':
+                handle_take(location, &carrying_item, arg);
+                break;
+            case 'U':
+                // TODO: Implement USE action
+                break;
+            default:
+                printf("Try another word or V for vocabulary\n");
+                Sleep(2000);
         }
     }
 
