@@ -3,8 +3,7 @@
 
 #define ITEM_NAME_SIZE 30
 #define MAX_ITEMS_PER_LOCATION 6
-//#define START_POSITION 47
-#define START_POSITION 11 // temporary only
+#define START_POSITION 47
 
 #include <stdbool.h>
 
