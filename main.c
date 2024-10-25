@@ -3,14 +3,17 @@
 #include <string.h>
 #include <synchapi.h>
 #include <windows.h>
-#include "src/include/config.h"
-#include "src/include/help.h"
-#include "prompt.h"
+#include "include/config.h"
+#include "include/help.h"
+#include "include/prompt.h"
 
 void display_message(const char *format, ...) {
     va_list args;
     va_start(args, format);
     clear();
+#ifdef _IS_DEBUG
+    fflush(stdout);
+#endif
     vprintf(format, args);
     Sleep(1000);
     va_end(args);
@@ -56,6 +59,9 @@ void show_location(Location* location, Item* carryingItem) {
         strcat(carrying, carryingItem->label);
     }
 
+#ifdef _IS_DEBUG
+    fflush(stdout);
+#endif
     printf("%s %d\n"
            "%s\n"
            "%s\n"

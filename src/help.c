@@ -17,6 +17,9 @@ void clear() {
 
 void gossip() {
     clear();
+#ifdef _IS_DEBUG
+    fflush(stdout);
+#endif
     printf("The  woodcutter lost  his home key...\n"
            "The butcher likes fruit... The cooper\n"
            "is greedy... Dratewka plans to make a\n"
@@ -29,6 +32,9 @@ void gossip() {
 
 void vocabulary() {
     clear();
+#ifdef _IS_DEBUG
+    fflush(stdout);
+#endif
     printf("NORTH or N, SOUTH or S\n"
            "WEST or W, EAST or E\n"
            "TAKE (object) or T (object)\n"
