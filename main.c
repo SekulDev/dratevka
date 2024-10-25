@@ -86,14 +86,19 @@ bool can_go(Location location, enum Directions direction) {
      return false;
 }
 
-void go(Location **location, enum Directions direction) {
+void go(Location **location, enum Directions direction, const bool *isDragonDead) {
     if (!can_go(**location, direction)) {
         return;
     }
     int new_position = (**location).position + get_diff(direction);
+    Location *new_location = &*get_location(new_position);
+    if (new_location->position == 42 && !(*isDragonDead)) {
+        display_message("You can't go that way...  The dragon sleeps in a cave!\n");
+        return;
+    }
     display_message("You are going %s...\n", locale_direction(direction));
     clear();
-    *location = &*get_location(new_position);
+    *location = new_location;
 }
 
 Item* get_item(const char* name) {
@@ -132,7 +137,7 @@ bool is_carrying_item(Item *carrying_item) {
     return carrying_item != NULL;
 }
 
-void handle_movement(Location **location, char action) {
+void handle_movement(Location **location, char action, bool *isDragonDead) {
     int direction;
     switch (action) {
         case 'W': direction = WEST; break;
@@ -145,7 +150,7 @@ void handle_movement(Location **location, char action) {
     if (!can_go(**location, direction)) {
         cant_go();
     } else {
-        go(location, direction);
+        go(location, direction, isDragonDead);
     }
 }
 
@@ -207,8 +212,7 @@ void handle_take(Location *location, Item **carrying_item, const char *arg) {
 }
 
 
-
-void handle_use(Location *location, Item **carrying_item, const char *arg, int *milestones) {
+void handle_use(Location *location, Item **carrying_item, const char *arg, int *milestones, bool *isDragonDead) {
     Item *item = *carrying_item;
     if (strcmp(arg, item->name) != 0) {
         display_message("You dont have item like that\n");
@@ -220,14 +224,30 @@ void handle_use(Location *location, Item **carrying_item, const char *arg, int *
         return;
     }
 
+    if (strcmp(item->name, "KNIFE") == 0 && !(*isDragonDead)) {
+        display_message("Nothing happened\n");
+        return;
+    }
+
     display_message("You are using %s\n", item->label);
 
     UseAction action = item->useAction;
     if (action.milestone == true) {
         (*milestones)++;
+        if (*milestones == 6) {
+            *carrying_item = get_item("SHEEP");
+        }
     }
 
     Item *new_item = get_item(action.newItem);
+
+    if (strcmp(new_item->name, "dead dragon") == 0) {
+        (*isDragonDead) = true;
+        for (int i = 0; i < MAX_ITEMS_PER_LOCATION; i++) {
+            location->items[i] = NULL;
+        }
+    }
+
     if (new_item->flag == 1) {
         *carrying_item = new_item;
     } else {
@@ -250,13 +270,16 @@ int main(void) {
     Location *location = get_location(START_POSITION);
     Item* carrying_item = NULL;
     int milestones = 0;
+    bool isDragonDead = false;
 
     while (1) {
         char command[MAX_INPUT_SIZE];
         char arg[MAX_INPUT_SIZE];
         if (milestones == 6) {
-            //@TODO GIVE SHEEP AND BREAK ON USE PRIZE
-            break;
+            if (strcmp(carrying_item->name, "PRIZE") == 0) {
+                display_message("You finished the game. Congratulations!\n");
+                break;
+            }
         }
         strcpy((char *) &command, "");
         strcpy((char *) &arg, "");
@@ -271,7 +294,7 @@ int main(void) {
             case 'E':
             case 'S':
             case 'N':
-                handle_movement(&location, action);
+                handle_movement(&location, action, &isDragonDead);
                 break;
             case 'G':
                 gossip();
@@ -286,7 +309,7 @@ int main(void) {
                 handle_take(location, &carrying_item, arg);
                 break;
             case 'U':
-                handle_use(location, &carrying_item, arg, &milestones);
+                handle_use(location, &carrying_item, arg, &milestones, &isDragonDead);
                 break;
             default:
                 display_message("Try another word or V for vocabulary\n");
