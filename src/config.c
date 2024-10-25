@@ -1,4 +1,4 @@
-#include "include/config.h"
+#include "config.h"
 
 char* locale_direction(enum Directions direction) {
     switch (direction) {

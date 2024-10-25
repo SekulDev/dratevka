@@ -1,4 +1,4 @@
-#include "include/prompt.h"
+#include "prompt.h"
 #include <stdio.h>
 #include <string.h>
 

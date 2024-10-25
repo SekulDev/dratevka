@@ -1,4 +1,4 @@
-#include "include/help.h"
+#include "help.h"
 #include <stdlib.h>
 #include <stdio.h>
 #ifdef _WIN32
