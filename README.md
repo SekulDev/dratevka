@@ -61,14 +61,10 @@ The project provided valuable insights into low-level programming concepts.
 ### Future Improvements
 
 Feel free to suggest and improve through GitHub Issues.
+As this was my first C project, I'm particularly interested in feedback regarding best practices and potential optimizations.
 Potential areas for enhancement include:
 
 - Cross-platform compatibility
 - Unit testing implementation
 - Code organization and structure
 - Memory management optimization
-
-## Contributing
-
-Feel free to open issues with suggestions for improvements or bug reports. As this was my first C project, I'm
-particularly interested in feedback regarding best practices and potential optimizations.
