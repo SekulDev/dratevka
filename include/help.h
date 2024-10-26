@@ -7,6 +7,4 @@ void gossip();
 
 void vocabulary();
 
-void cant_go();
-
 #endif //DRATEVKA_HELP_H

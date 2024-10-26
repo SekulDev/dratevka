@@ -44,10 +44,3 @@ void vocabulary() {
     system("pause");
     clear();
 }
-
-void cant_go() {
-    clear();
-    printf("You can't go that way\n");
-    Sleep(1000);
-    clear();
-}

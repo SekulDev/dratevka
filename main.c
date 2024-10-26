@@ -1,8 +1,18 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdarg.h>
 #include <synchapi.h>
+
+#ifdef _WIN32
+
 #include <windows.h>
+
+#define SLEEP_MS(ms) Sleep(ms)
+#else
+#include <unistd.h>
+#define SLEEP_MS(ms) usleep((ms) * 1000)
+#endif
 #include "include/config.h"
 #include "include/help.h"
 #include "include/prompt.h"
@@ -15,12 +25,11 @@ void display_message(const char *format, ...) {
     fflush(stdout);
 #endif
     vprintf(format, args);
-    Sleep(1000);
+    SLEEP_MS(1000);
     va_end(args);
 }
 
 void show_location(Location* location, Item* carryingItem) {
-//    clear();
     char can_go[100] = "You can go ";
     int can_go_added = 0;
     for (int i = 0; i < 4; i++) {
@@ -130,7 +139,7 @@ char get_command_action(char* command) {
     if (strcmp(command, "TAKE") == 0 || strcmp(command, "T") == 0) return 'T';
     if (strcmp(command, "DROP") == 0 || strcmp(command, "D") == 0) return 'D';
     if (strcmp(command, "USE") == 0 || strcmp(command, "U") == 0) return 'U';
-    return 0;
+    return '\0';
 }
 
 bool is_carrying_item(Item *carrying_item) {
@@ -148,7 +157,8 @@ void handle_movement(Location **location, char action, bool *isDragonDead) {
     }
 
     if (!can_go(**location, direction)) {
-        cant_go();
+        display_message("You cant go that way\n");
+        clear();
     } else {
         go(location, direction, isDragonDead);
     }
@@ -313,7 +323,8 @@ int main(void) {
                 break;
             default:
                 display_message("Try another word or V for vocabulary\n");
-                Sleep(1000);
+                SLEEP_MS(1000);
+                break;
         }
     }
 
