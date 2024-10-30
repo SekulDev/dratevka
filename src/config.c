@@ -1,3 +1,5 @@
+#define MAX_INPUT_SIZE 256
+
 #include "config.h"
 
 char* locale_direction(enum Directions direction) {
