@@ -4,8 +4,8 @@
 
 void split_input(const char* input, char* command, char* arg) {
     if (input == NULL || command == NULL || arg == NULL) {
-        command[0] = '\0';
-        arg[0] = '\0';
+        if (command) command[0] = '\0';
+        if (arg) arg[0] = '\0';
         return;
     }
 
